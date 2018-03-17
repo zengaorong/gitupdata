@@ -13,7 +13,7 @@ basedir = os.path.abspath(os.path.dirname(__file__))
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'hard to guess string'
-app.config['SQLALCHEMY_DATABASE_URI'] ='mysql://root:12345@localhost/leodb'
+app.config['SQLALCHEMY_DATABASE_URI'] ='mysql://root:7monthdleo@127.0.0.1:3306/leodb'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 bootstrap = Bootstrap(app)
