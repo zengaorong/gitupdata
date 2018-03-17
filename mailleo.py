@@ -1,42 +1,106 @@
-# -*- coding: utf-8 -*-
-from flask import Flask, request
-from flask_script import Manager, Shell
+import os
+from flask import Flask, render_template, session, redirect, url_for
+from flask_bootstrap import Bootstrap
+from flask_moment import Moment
+from flask_wtf import FlaskForm
+from wtforms import StringField, SubmitField
+from wtforms.validators import DataRequired
+from flask_sqlalchemy import SQLAlchemy
+from flask_migrate import Migrate
 from flask_mail import Mail, Message
-from threading import Thread
 
+basedir = os.path.abspath(os.path.dirname(__file__))
 
 app = Flask(__name__)
-app.config['MAIL_DEBUG'] = True             # 开启debug，便于调试看信息
-app.config['MAIL_SUPPRESS_SEND'] = False    # 发送邮件，为True则不发送
-app.config['MAIL_SERVER'] = 'smtp.qq.com'   # 邮箱服务器
-app.config['MAIL_PORT'] = 465               # 端口
-app.config['MAIL_USE_SSL'] = True           # 重要，qq邮箱需要使用SSL
-app.config['MAIL_USE_TLS'] = False          # 不需要使用TLS
-app.config['MAIL_USERNAME'] = 'zengaorong@qq.com'  # 填邮箱
-app.config['MAIL_PASSWORD'] = 'xmghqcdjsckpebci'      # 填授权码
-app.config['MAIL_DEFAULT_SENDER'] = 'xxx@qq.com'  # 填邮箱，默认发送者
-manager = Manager(app)
+app.config['SECRET_KEY'] = 'hard to guess string'
+app.config['SQLALCHEMY_DATABASE_URI'] ='mysql://root:12345@localhost/leodb'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+
+app.config['MAIL_SERVER'] = 'smtp.qq.com'
+app.config['MAIL_PORT'] = 465
+app.config['MAIL_USE_SSL'] = True
+app.config['MAIL_USE_TLS'] = False
+app.config['MAIL_USERNAME'] = 'zengaorong@qq.com'
+app.config['MAIL_PASSWORD'] = 'xmghqcdjsckpebci'
+app.config['FLASKY_MAIL_SUBJECT_PREFIX'] = '[Flasky]'
+app.config['FLASKY_MAIL_SENDER'] = 'zengaorong@qq.com'
+app.config['FLASKY_ADMIN'] = '1904959670@qq.com'
+
+bootstrap = Bootstrap(app)
+moment = Moment(app)
+db = SQLAlchemy(app)
+migrate = Migrate(app, db)
 mail = Mail(app)
 
 
-# 异步发送邮件
-def send_async_email(app, msg):
-    with app.app_context():
-        mail.send(msg)
+class Role(db.Model):
+    __tablename__ = 'roles'
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(64), unique=True)
+    users = db.relationship('User', backref='role', lazy='dynamic')
+
+    def __repr__(self):
+        return '<Role %r>' % self.name
 
 
-@app.route('/')
+class User(db.Model):
+    __tablename__ = 'users'
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(64), unique=True, index=True)
+    role_id = db.Column(db.Integer, db.ForeignKey('roles.id'))
+
+    def __repr__(self):
+        return '<User %r>' % self.username
+
+
+def send_email(to, subject, template, **kwargs):
+    msg = Message(app.config['FLASKY_MAIL_SUBJECT_PREFIX'] + ' ' + subject,
+                  sender=app.config['FLASKY_MAIL_SENDER'], recipients=[to])
+    msg.body = render_template(template + '.txt', **kwargs)
+    msg.html = render_template(template + '.html', **kwargs)
+    mail.send(msg)
+
+
+class NameForm(FlaskForm):
+    name = StringField('What is your name?', validators=[DataRequired()])
+    submit = SubmitField('Submit')
+
+
+@app.shell_context_processor
+def make_shell_context():
+    return dict(db=db, User=User, Role=Role)
+
+
+@app.errorhandler(404)
+def page_not_found(e):
+    return render_template('404.html'), 404
+
+
+@app.errorhandler(500)
+def internal_server_error(e):
+    return render_template('500.html'), 500
+
+
+@app.route('/', methods=['GET', 'POST'])
 def index():
-    msg = Message(subject='Hello World',
-                  sender="xxx@qq.com",  # 需要使用默认发送者则不用填
-                  recipients=['x1@qq.com', 'x2@qq.com'])
-    # 邮件内容会以文本和html两种格式呈现，而你能看到哪种格式取决于你的邮件客户端。
-    msg.body = 'sended by flask-email'
-    msg.html = '<b>测试Flask发送邮件<b>'
-    thread = Thread(target=send_async_email, args=[app, msg])
-    thread.start()
-    return '<h1>邮件发送成功</h1>'
+    form = NameForm()
+    if form.validate_on_submit():
+        user = User.query.filter_by(username=form.name.data).first()
+        if user is None:
+            user = User(username=form.name.data)
+            db.session.add(user)
+            db.session.commit()
+            session['known'] = False
+            if app.config['FLASKY_ADMIN']:
+                send_email(app.config['FLASKY_ADMIN'], 'New User',
+                           'mail/new_user', user=user)
+        else:
+            session['known'] = True
+        session['name'] = form.name.data
+        return redirect(url_for('index'))
+    return render_template('index.html', form=form, name=session.get('name'),
+                           known=session.get('known', False))
 
 
-if __name__ == '__main__':
-    manager.run()
+app.run()
