@@ -127,6 +127,7 @@ def leopic():
     # print list
     # print list[0].mhname
     # print type(list[0])
+
     url_list = getDate()
     return render_template('auth/showpic.html', url_list=url_list)
 
