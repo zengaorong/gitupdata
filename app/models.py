@@ -14,6 +14,26 @@ class Role(db.Model):
     def __repr__(self):
         return '<Role %r>' % self.name
 
+class Manhua(UserMixin,db.Model):
+    __tablename__ = 'mhname'
+    id = db.Column(db.Integer, primary_key=True)
+    mhname = db.Column(db.String(64), unique=True)
+    #users = db.relationship('User', backref='role', lazy='dynamic')
+
+    def __repr__(self):
+        return '<Manhua %r>' % self.mhname
+
+class Chapter(UserMixin,db.Model):
+    __tablename__ = 'mhchapter'
+    id = db.Column(db.Integer, primary_key=True)
+    mhname = db.Column(db.String(64), unique=True)
+    data = db.Column(db.Text(), unique=True)
+    #users = db.relationship('User', backref='role', lazy='dynamic')
+
+    def __repr__(self):
+        return '<mhchapter %r>' % self.mhname
+
+
 
 class User(UserMixin, db.Model):
     __tablename__ = 'users'

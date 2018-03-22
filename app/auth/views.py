@@ -1,11 +1,14 @@
+
 from flask import render_template, redirect, request, url_for, flash
 from flask_login import login_user, logout_user, login_required, \
     current_user
 from . import auth
 from .. import db
-from ..models import User
+from ..models import User,Manhua,Chapter
 from ..email import send_email
-from .forms import LoginForm, RegistrationForm
+from .forms import LoginForm, RegistrationForm, Addmhname
+import os
+import re
 
 
 @auth.before_app_request
@@ -86,3 +89,105 @@ def resend_confirmation():
                'auth/email/confirm', user=current_user, token=token)
     flash('A new confirmation email has been sent to you by email.')
     return redirect(url_for('main.index'))
+
+
+@auth.route('/redirect', methods=['GET', 'POST'])
+def leo_redirect():
+    form = RegistrationForm()
+    if form.validate_on_submit():
+        user = User(email=form.email.data,
+                    username=form.username.data,
+                    password=form.password.data)
+        db.session.add(user)
+        db.session.commit()
+        return redirect(url_for('auth.login'))
+
+@auth.route('/manhuaname', methods=['GET', 'POST'])
+def get_manhuaname():
+    form = Addmhname()
+    if form.validate_on_submit():
+        manhua  = Manhua(mhname=form.mhname.data)
+        db.session.add(manhua)
+        db.session.commit()
+    return render_template('auth/addnewmh.html', form=form)
+    #return redirect(url_for('auth.leo_redirect'))
+
+
+@auth.route('/leomahua')
+def leomahua():
+    list = Manhua.query.order_by(Manhua.mhname)
+    # print list
+    # print list[0].mhname
+    # print type(list[0])
+    return render_template('auth/showmh.html', data_list=list)
+
+@auth.route('/leopic')
+def leopic():
+    #list = Manhua.query.order_by(Manhua.mhname)
+    # print list
+    # print list[0].mhname
+    # print type(list[0])
+    url_list = getDate()
+    return render_template('auth/showpic.html', url_list=url_list)
+
+
+@auth.route('/addpic')
+def addpic():
+    url_list = getDate()
+
+
+    #Chapter
+    #list = Manhua.query.order_by(Manhua.mhname)
+    # print list
+    # print list[0].mhname
+    # print type(list[0])
+    #return render_template('auth/showpic.html')
+
+
+
+def getDate():
+    loadfile = [u'./app/static']
+    mydict = {}
+    mylist = []
+    while(loadfile):
+        try:
+            path = loadfile.pop()
+            #
+            #print path
+            for x in os.listdir(path):
+                if os.path.isfile(os.path.join(path,x)):
+                    if os.path.splitext(x)[1]=='.jpg' or os.path.splitext(x)[1]=='.png':
+                        try:
+                            pass
+                        except Exception,e:
+                            pass
+                        templist = test3(path.split('\\')[-1],x,path.split('\\')[-2])
+                        mydict[templist[0]] = templist
+                else:
+                    loadfile.append(os.path.join(path,x))
+
+        except Exception,e:
+            print str(e) + path
+
+
+    #InsertData('mhpic',mydict)
+    url_list = []
+    for key in mydict:
+        mylist.append(mydict[key])
+        url_list.append(mydict[key][5].replace('./app/static/',""))
+
+    return url_list
+
+def test3(chaptername,check_str,mhname):
+    str_type = check_str.split('.')[-1]
+    str_name = chaptername
+
+    pattern = re.compile(u'(.+)\.+(.+)')
+    match = pattern.match(check_str)
+    str_id =  match.group(1)
+
+    str_nums = str_id.replace(chaptername,'')
+    if str_nums.find('num')!=-1:
+        str_nums = check_str.split('.')[0].replace('num','')
+
+    return [str_id,str_type,mhname,str_name,str_nums,mhname + '/' + str_name + '/' + check_str]

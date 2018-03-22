@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+
+{% block title %}Flasky{% endblock %}
+
+{% block page_content %}
+<div class="page-header">
+    <h1>漫画列表</h1>
+
+
+{#    {% for i in range(0,10) %}#}
+{#        <img src=" {{url_for('static', filename='pics/第64话 布里克斯的北壁5.jpg') }}" alt="{{ url_for('static', filename='pics/第64话 布里克斯的北壁5.jpg') }}" >#}
+{#    {% endfor %}#}
+
+    {% for url in url_list %}
+        <img src=" {{url_for('static', filename=url) }}" alt="{{ url_for('static', filename=url) }}" >
+    {% endfor %}
+
+    {#    {% for data in data_list %}#}
+{#        <h2>{{ data.mhname }}</h2>#}
+{#        {% if not loop.first %}|{% endif %}#}
+{#        <a href="{{ link }}">{{ label }}</a>#}
+{#    {% endfor %}#}
+</div>
+{% endblock %}
