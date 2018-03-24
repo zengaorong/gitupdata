@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html>
+
+<meta charset="utf-8">
+<title>Flask JQuery</title>
+<!-- 插入jquery -->
+<script src="{{url_for('static', filename='jquery-3.2.1/jquery-3.2.1.js')}}"></script>
+
+<style type="text/css">
+    ul#portfolio li{list-style: none;}
+    ul#portfolio li.loading{background-color: {{url_for('static', filename='images/spiner.gif') }} }
+    ul#portfolio li img{}
+
+    div{
+        border:1px solid red;
+        margin:20px;
+        text-align:center;
+    }
+
+</style>
+
+<body>
+
+<div id="wrapper" class='big'></div>
+
+<script type=text/javascript>
+    var $SCRIPT_ROOT = {{request.script_root|tojson|safe}};
+</script>
+
+<script type=text/javascript>
+    $(function(){
+        var images=new Array();
+        rating_data = {"a":'123',"b":'456'},
+        $.ajax({
+            method:"get",
+            url: $SCRIPT_ROOT + '/auth' + '/add',
+            async:true,
+            data : rating_data,
+            dataType:"json",
+            success:function(data){
+                for(i=0 ;i<data.result.length;i++){
+                    picstrs = '{{url_for('static',filename='') }}'
+                    images[i] = picstrs + data.result[i];
+                }
+                addimages()
+            },
+            error:function(){
+                alert("请求失败！");
+            }
+        });
+
+
+
+        function addimages() {
+{#            images[0]='{{url_for('static', filename='pics/第64话 布里克斯的北壁5.jpg') }}';#}
+{#            images[1]='{{url_for('static', filename='pics/第64话 布里克斯的北壁6.jpg') }}';#}
+{#            images[2]='{{url_for('static', filename='pics/第64话 布里克斯的北壁7.jpg') }}';#}
+            //获取了图像的数量
+            var max=$(images).length;
+
+            //如果包含一张以上的图像，那么创建对应的UL元素家人到wrapper div中，并且调用LoadImage方法。
+            if(max>0){
+                //create the UL element
+                var ul=$('<ul id="portfolio"></ul>');
+                //append to div#wrapper
+                $(ul).appendTo($('#wrapper'));
+                //load the first image
+                LoadImage(0,max);
+            }
+
+            //在LoadImage方法中，循环遍历所有的图像，对每个图像创建li元素
+            function LoadImage(index,max){
+                if(index<max){
+                    //利用attr方法为li元素增加了css样式，即加上了loading的gif背景。
+                    var list=$('<li id="portfolio_'+index+'"></li>').attr('class','loading');
+                    //把li添加到ul元素中
+                    $('ul#portfolio').append(list);
+                    //获取当前的li元素
+                    var curr=$("ul#portfolio li#portfolio_"+index);
+                    //创建图像元素
+                    var img=new Image();
+                    //加载图像
+                    $(img).on('load',function() {
+                        $(this).css('display','none');
+                        $(curr).removeClass('loading').append(this);
+                        $(this).fadeIn('fast',function(){
+                            //采用回调函数的方法，在当前元素成功执行fadeIn方法之后 再去调用下一个元素的LoadImage方法，这样就能实现多个图像的顺序加载了。
+                            LoadImage(index+1,max);
+                        });
+                    }).attr('src',images[index]);
+
+                    {#          .error(function(){#}
+                    {#            $(curr).remove();#}
+                    {#            LoadImage(index+1,max);#}
+                    {#       }).attr('src',images[index]);#}
+                }
+            }
+
+        }
+    })
+</script>
+
+</body>
+</html>
