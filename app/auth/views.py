@@ -1,5 +1,5 @@
 
-from flask import render_template, redirect, request, url_for, flash
+from flask import render_template, redirect, request, url_for, flash,jsonify
 from flask_login import login_user, logout_user, login_required, \
     current_user
 from . import auth
@@ -9,7 +9,6 @@ from ..email import send_email
 from .forms import LoginForm, RegistrationForm, Addmhname
 import os
 import re
-
 
 @auth.before_app_request
 def before_request():
@@ -132,17 +131,25 @@ def leopic():
     return render_template('auth/showpic.html', url_list=url_list)
 
 
+@auth.route('/add',methods=['GET', 'POST'])
+def add_numbers():
+    url_list = getDate()
+    return jsonify(result = url_list)
+
+
+
 @auth.route('/addpic')
 def addpic():
-    url_list = getDate()
-
-
+    #url_list = getDate()
+    loadfile = [u'./app/static/pic']
+    #path = loadfile.pop()
+    #print os.listdir('./app/static/pic')
     #Chapter
     #list = Manhua.query.order_by(Manhua.mhname)
     # print list
     # print list[0].mhname
     # print type(list[0])
-    #return render_template('auth/showpic.html')
+    return render_template('auth/showpics.html')
 
 
 
