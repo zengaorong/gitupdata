@@ -20,4 +20,4 @@ def test():
     unittest.TextTestRunner(verbosity=2).run(tests)
 
 
-app.run()
+app.run(host='127.0.0.1',port=8083,debug=True)

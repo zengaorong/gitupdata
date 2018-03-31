@@ -27,16 +27,16 @@ class Config:
 
 class DevelopmentConfig(Config):
     DEBUG = True
-    SQLALCHEMY_DATABASE_URI = 'mysql://root:12345@localhost/leodb'
+    SQLALCHEMY_DATABASE_URI = 'mysql://root:7Monthdleo@localhost/leodb'
 
 
 class TestingConfig(Config):
     TESTING = True
-    SQLALCHEMY_DATABASE_URI = 'mysql://root:12345@localhost/leodb'
+    SQLALCHEMY_DATABASE_URI = 'mysql://root:7Monthdleo@localhost/leodb'
 
 
 class ProductionConfig(Config):
-    SQLALCHEMY_DATABASE_URI = 'mysql://root:12345@localhost/leodb'
+    SQLALCHEMY_DATABASE_URI = 'mysql://root:7Monthdleo@localhost/leodb'
 
 
 config = {

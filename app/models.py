@@ -26,12 +26,15 @@ class Manhua(UserMixin,db.Model):
 class Chapter(UserMixin,db.Model):
     __tablename__ = 'mhchapter'
     id = db.Column(db.Integer, primary_key=True)
-    mhname = db.Column(db.String(64), unique=True)
-    data = db.Column(db.Text(), unique=True)
+    mhname_id = db.Column(db.Integer, db.ForeignKey('mhname.id'))
+    data = db.Column(db.Text())
+    chapter_nums = db.Column(db.Integer)
+    pics_nums = db.Column(db.Integer)
+    chapter_name = db.Column(db.String(64))
     #users = db.relationship('User', backref='role', lazy='dynamic')
 
     def __repr__(self):
-        return '<mhchapter %r>' % self.mhname
+        return '<mhchapter %r>' % self.chapter_name
 
 
 

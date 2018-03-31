@@ -13,7 +13,7 @@ basedir = os.path.abspath(os.path.dirname(__file__))
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'hard to guess string'
-app.config['SQLALCHEMY_DATABASE_URI'] ='mysql://root:12345@localhost/leodb'
+app.config['SQLALCHEMY_DATABASE_URI'] ='mysql://root:7Monthdleo@localhost/leodb'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 bootstrap = Bootstrap(app)
@@ -44,13 +44,25 @@ manager.add_command('db',MigrateCommand)
 #         return '<User %r>' % self.username
 
 class Manhua(db.Model):
-    __tablename__ = 'mhchapter'
-    id = db.Column(db.Integer, primary_key=True)
+    __tablename__ = 'mhname'
+    id = db.Column(db.VARCHAR(36), primary_key=True)
     mhname = db.Column(db.String(64), unique=True)
     #users = db.relationship('User', backref='role', lazy='dynamic')
 
     def __repr__(self):
         return '<Manhua %r>' % self.mhname
+
+class Chapter(db.Model):
+    __tablename__ = 'mhchapter'
+    id = db.Column(db.VARCHAR(36), primary_key=True)
+    mhname_id = db.Column(db.VARCHAR(36), db.ForeignKey('mhname.id'))
+    data = db.Column(db.Text())
+    chapter_nums = db.Column(db.Integer)
+    pics_nums = db.Column(db.Integer)
+    chapter_name = db.Column(db.String(64))
+    #users = db.relationship('User', backref='role', lazy='dynamic')
+    def __repr__(self):
+        return '<mhchapter %r>' % self.chapter_name
 
 # class NameForm(FlaskForm):
 #     name = StringField('What is your name?', validators=[DataRequired()])

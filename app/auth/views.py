@@ -1,4 +1,4 @@
-
+#coding=utf-8
 from flask import render_template, redirect, request, url_for, flash,jsonify
 from flask_login import login_user, logout_user, login_required, \
     current_user
@@ -9,7 +9,10 @@ from ..email import send_email
 from .forms import LoginForm, RegistrationForm, Addmhname
 import os
 import re
-
+import sys
+reload(sys)
+sys.setdefaultencoding('utf-8')
+dataname = "leodb"
 @auth.before_app_request
 def before_request():
     if current_user.is_authenticated \
@@ -127,64 +130,69 @@ def leopic():
     # print list[0].mhname
     # print type(list[0])
 
-    url_list = getDate()
+    url_list = []
     return render_template('auth/showpic.html', url_list=url_list)
 
 
 @auth.route('/add',methods=['GET', 'POST'])
 def add_numbers():
-    url_list = getDate()
-    return jsonify(result = url_list)
+    chapter_id = request.args.get('chapter_id', '', type=str)
+
+    chapter = Chapter.query.filter_by(id = chapter_id).first()
+    chapter_strs = chapter.data
+    chapter_list = chapter_strs.split('\n')
+    chapter_list.pop()
+
+    return jsonify(result = chapter_list)
+
+
+@auth.route('/getindexdata',methods=['GET', 'POST'])
+def getindexdata():
+    mhlist = Manhua.query.all()
+    return jsonify(result = mhlist)
 
 
 
-@auth.route('/addpic')
-def addpic():
-    #url_list = getDate()
-    loadfile = [u'./app/static/pic']
-    #path = loadfile.pop()
-    #print os.listdir('./app/static/pic')
-    #Chapter
-    #list = Manhua.query.order_by(Manhua.mhname)
-    # print list
-    # print list[0].mhname
-    # print type(list[0])
-    return render_template('auth/showpics.html')
+
+@auth.route('/addpic/<chapter_id>')
+def addpic(chapter_id):
+    return render_template('auth/showpics.html',chapter_id=chapter_id)
+
+
+@auth.route('/mhindex',methods=['GET', 'POST'])
+def mhindex():
+    mhlist = Manhua.query.all()
+    return render_template('auth/mhindex.html',mhlist = mhlist)
+
+
+@auth.route('/mhchapter/<mh_id>',methods=['GET', 'POST'])
+def mhchapter(mh_id):
+    chapters = Chapter.query.filter_by(mhname_id = mh_id).all()
+    return render_template('auth/mhchapter.html',chapters = chapters)
 
 
 
 def getDate():
-    loadfile = [u'./app/static']
-    mydict = {}
-    mylist = []
-    while(loadfile):
-        try:
-            path = loadfile.pop()
-            #
-            #print path
-            for x in os.listdir(path):
-                if os.path.isfile(os.path.join(path,x)):
-                    if os.path.splitext(x)[1]=='.jpg' or os.path.splitext(x)[1]=='.png':
-                        try:
-                            pass
-                        except Exception,e:
-                            pass
-                        templist = test3(path.split('\\')[-1],x,path.split('\\')[-2])
-                        mydict[templist[0]] = templist
-                else:
-                    loadfile.append(os.path.join(path,x))
-
-        except Exception,e:
-            print str(e) + path
+    mhlist = Manhua.query.all()
+    for key in  mhlist:
+        #print key.mhname
+        chapters = Chapter.query.filter_by(mhname_id = key.id).all()
+        for chapter in chapters:
+            print chapter.chapter_name
 
 
-    #InsertData('mhpic',mydict)
-    url_list = []
-    for key in mydict:
-        mylist.append(mydict[key])
-        url_list.append(mydict[key][5].replace('./app/static/',""))
 
-    return url_list
+    mhname = '火影忍者'
+    mh = Manhua.query.filter_by(mhname=mhname).first()
+    chapters = Chapter.query.filter_by(mhname_id = mh.id).all()
+    chapter_strs = chapters[0].data
+    chapter_list = chapter_strs.split('\n')
+    chapter_list.pop()
+    #return chapter_list
+
+
+
+
 
 def test3(chaptername,check_str,mhname):
     str_type = check_str.split('.')[-1]

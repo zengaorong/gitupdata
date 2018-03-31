@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+
+<meta charset="utf-8">
+<title>Flask JQuery</title>
+<!-- 插入jquery -->
+{#<script src="{{url_for('static', filename='jquery-3.2.1/jquery-3.2.1.js')}}"></script>#}
+
+{#<style type="text/css" src="{{url_for('static', filename='css/app.css')}}" ></style>#}
+
+<body>
+
+<div id="wrapper" class='big'></div>
+
+<script type=text/javascript>
+    var $SCRIPT_ROOT = {{request.script_root|tojson|safe}};
+</script>
+
+
+
+{% for data in mhlist %}
+    <a class="chapterurl" href="http://127.0.0.1:5000/auth/mhchapter/{{ data.id }}">{{ data.mhname }}</a>
+{% endfor %}
+
+
+{#<script type=text/javascript>#}
+{#    $(function(){#}
+{#        var images=new Array();#}
+{#        rating_data = {"a":'123',"b":'456'},#}
+{#        $.ajax({#}
+{#            method:"get",#}
+{#            url: $SCRIPT_ROOT + '/auth' + '/getindexdata',#}
+{#            async:true,#}
+{#            data : rating_data,#}
+{#            dataType:"json",#}
+{#            success:function(data){#}
+{#                for(i=0 ;i<data.result.length;i++){#}
+{#                    alert(data.id)#}
+{#                    alert(data.mhname)#}
+{#                }#}
+{#            },#}
+{#            error:function(){#}
+{#                alert("请求失败！");#}
+{#            }#}
+{#        });#}
+{#    })#}
+{#</script>#}
+
+</body>
+</html>

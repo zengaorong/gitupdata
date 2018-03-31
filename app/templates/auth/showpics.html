@@ -30,7 +30,7 @@
 <script type=text/javascript>
     $(function(){
         var images=new Array();
-        rating_data = {"a":'123',"b":'456'},
+        rating_data = {"chapter_id":'{{ chapter_id }}'},
         $.ajax({
             method:"get",
             url: $SCRIPT_ROOT + '/auth' + '/add',
@@ -39,8 +39,8 @@
             dataType:"json",
             success:function(data){
                 for(i=0 ;i<data.result.length;i++){
-                    picstrs = '{{url_for('static',filename='') }}'
-                    images[i] = picstrs + data.result[i];
+                    picstrs = '{{url_for('static',filename='pics/') }}'
+                    images[i] = picstrs + data.result[i]
                 }
                 addimages()
             },
